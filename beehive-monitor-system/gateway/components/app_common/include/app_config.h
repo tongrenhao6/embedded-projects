@@ -1,0 +1,17 @@
+#pragma once
+
+#include <stdint.h>
+
+#define APP_GATEWAY_ID 1U
+#define APP_HEARTBEAT_PERIOD_MS 5000U
+
+#define APP_DEVICE_ROLE_NAME "gateway"
+
+#define APP_LORA_UART_BAUD_RATE 9600
+#define APP_LORA_UART_TX_GPIO 4
+#define APP_LORA_UART_RX_GPIO 5
+
+#define APP_RESERVED_BOOT_GPIO 0
+#define APP_RESERVED_USB_DM_GPIO 19
+#define APP_RESERVED_USB_DP_GPIO 20
+#define APP_RESERVED_RGB_GPIO 48

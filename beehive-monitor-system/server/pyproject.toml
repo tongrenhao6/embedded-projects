@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "beehive-gateway-pc"
+version = "0.1.0"
+description = "MQTT ingestion and query API for the beehive ESP32 gateway"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.115",
+    "mysql-connector-python>=9.0",
+    "paho-mqtt>=2.0",
+    "pyserial>=3.5",
+    "uvicorn[standard]>=0.30",
+]
+
+[project.scripts]
+beehive-serial-ingest = "beehive_gateway.serial_ingest:main"
+beehive-mqtt-ingest = "beehive_gateway.mqtt_ingest:main"
+beehive-web = "beehive_gateway.web_server:main"
+
+[tool.setuptools]
+packages = ["beehive_gateway"]
+
+[tool.setuptools.package-data]
+beehive_gateway = ["web/*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

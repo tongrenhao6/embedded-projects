@@ -1,0 +1,69 @@
+menu "Beehive Gateway"
+
+config BEEHIVE_WIFI_SSID
+    string "Wi-Fi SSID"
+    default ""
+    help
+        Wi-Fi network name used by the gateway station interface.
+
+config BEEHIVE_WIFI_PASSWORD
+    string "Wi-Fi password"
+    default ""
+    help
+        Wi-Fi password. It is never printed by the firmware.
+
+config BEEHIVE_GATEWAY_ID
+    string "Gateway ID"
+    default "gw-001"
+    help
+        Gateway identifier used in MQTT topics and telemetry payloads.
+
+config BEEHIVE_MQTT_URI
+    string "MQTT broker URI"
+    default "mqtt://120.27.235.176:1883"
+    help
+        MQTT broker URI, for example mqtt://120.27.235.176:1883 or mqtts://broker.example.com:8883.
+
+config BEEHIVE_MQTT_USERNAME
+    string "MQTT username"
+    default ""
+    help
+        Optional MQTT username. It is never printed by the firmware.
+
+config BEEHIVE_MQTT_PASSWORD
+    string "MQTT password"
+    default ""
+    help
+        Optional MQTT password. It is never printed by the firmware.
+
+config BEEHIVE_MQTT_CLIENT_ID
+    string "MQTT client ID"
+    default "beehive_gw_001"
+    help
+        MQTT client identifier. It must be unique on the broker.
+
+config BEEHIVE_MQTT_TOPIC_PREFIX
+    string "MQTT topic prefix"
+    default "beehive/v1"
+    help
+        Root topic prefix used for telemetry and gateway status topics.
+
+config BEEHIVE_MQTT_TOPIC_MODE
+    string "MQTT topic mode"
+    default "hierarchical"
+    help
+        Use hierarchical for the normal topic tree or bemfa for flat alphanumeric topics.
+
+config BEEHIVE_MQTT_TELEMETRY_TOPIC
+    string "Flat telemetry topic"
+    default ""
+    help
+        Complete alphanumeric telemetry topic used when topic mode is bemfa.
+
+config BEEHIVE_MQTT_STATUS_TOPIC
+    string "Flat status topic"
+    default ""
+    help
+        Complete alphanumeric gateway status topic used when topic mode is bemfa.
+
+endmenu
