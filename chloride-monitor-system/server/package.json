@@ -1,0 +1,27 @@
+{
+  "name": "ph-water-server",
+  "version": "1.0.0",
+  "description": "HTTP backend for ESP32-S3 pH water monitor",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "smoke": "node scripts/smoke-test.js"
+  },
+  "keywords": [
+    "esp32",
+    "water-quality",
+    "ph",
+    "express",
+    "mysql"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "mqtt": "^5.15.1",
+    "mysql2": "^3.15.3"
+  }
+}

@@ -1,0 +1,47 @@
+idf_component_register(
+    SRC_DIRS 
+        "."
+        "APP"
+        "MANAGE"
+        "APP_DEMO"
+    INCLUDE_DIRS 
+        "."
+        "APP"
+        "MANAGE"
+        "APP_DEMO"
+    REQUIRES
+        LVGL
+        BSP
+        spi_flash
+        esp_wifi
+        esp_netif
+        esp_event
+        lwip
+        nvs_flash
+        json
+        mqtt
+    EXCLUDE_SRCS
+        "APP/app_test.c"
+        "MANAGE/bmp.c"
+        "MANAGE/jpeg.c"
+        "MANAGE/mjpeg.c"
+        "MANAGE/png.c"
+        "MANAGE/pngle.c"
+        "MANAGE/tjpgd.c"
+        "MANAGE/ui_img_album_png.c"
+        "MANAGE/ui_img_clock_hour_png.c"
+        "MANAGE/ui_img_clock_min_png.c"
+        "MANAGE/ui_img_clock_sec_png.c"
+        "MANAGE/ui_img_img_line_png.c"
+        "MANAGE/ui_img_pattern_png.c"
+        "APP_DEMO/lv_camera_demo.c"
+        "APP_DEMO/lv_music_demo.c"
+        "APP_DEMO/lv_pic_demo.c"
+        "APP_DEMO/lv_video_demo.c")
+
+component_compile_options(
+    -Wno-error=cpp
+    -Wno-error=unused-variable
+    -Wno-error=unused-but-set-variable
+    -Wno-error=incompatible-pointer-types
+    -Wno-error=clobbered)

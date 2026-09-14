@@ -8,8 +8,9 @@
 |---|---|---|---|
 | [stm32-smart-home-panel](./stm32-smart-home-panel) | STM32F103C8T6 | CubeMX + HAL / Keil MDK / PWM / ADC / 编码器 / OLED | 智能家居控制面板：两路负载开关 + 光敏/编码器双模式调光 |
 | [canteen-ordering-system](./canteen-ordering-system) | 6818 Linux 开发板 | LVGL 8.2 / framebuffer / evdev / TCP / epoll / 阿里云 | 校园点餐：触摸屏点餐 + epoll 服务端 16 路并发 |
+| [chloride-monitor-system](./chloride-monitor-system) | ESP32-S3 | ESP-IDF / FreeRTOS / RS485 / SD 卡 / MQTT / Node.js / MySQL | 水质监测终端：采集→SD 缓存→MQTT 上云→Web 监控，断网补传 |
 
-> 后续会陆续补入 ESP32 物联网监测等项目。
+> 后续会陆续补入 ESP32 蜂箱毕设等项目。
 
 ## 技术栈速览
 
