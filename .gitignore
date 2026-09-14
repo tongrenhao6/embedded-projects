@@ -1,0 +1,56 @@
+# ============================================
+# Embedded Projects Repo .gitignore
+# ============================================
+
+# ---- Keil MDK / ARMCC build artifacts ----
+Objects/
+Listings/
+*.o
+*.crf
+*.d
+*.axf
+*.hex
+*.bin
+*.map
+*.lnp
+*.htm
+*.lst
+*.bak
+*.dep
+*.plg
+*.scr
+*.scr.htm
+*.uvguix.*
+*.uvgui.*
+JLinkLog.txt
+JLinkSettings.ini
+DebugConfig/
+RTE/_*/
+RTE/.*
+*.dbgconf
+
+# ---- STM32CubeIDE / Eclipse ----
+.metadata/
+*.launch
+.settings/
+
+# ---- ESP-IDF build (for future ESP32 projects) ----
+build/
+managed_components/
+dependencies.lock
+sdkconfig
+sdkconfig.old
+
+# ---- Python (scripts / report generation) ----
+__pycache__/
+*.pyc
+*.pyo
+
+# ---- OS junk ----
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# ---- Documents / large binaries (kept out of code repo) ----
+*.docx
+*.pdf
