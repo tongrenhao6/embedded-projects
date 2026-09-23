@@ -1,0 +1,21 @@
+# ESP-IDF generated output
+xiaozhi/build/
+xiaozhi/managed_components/
+xiaozhi/sdkconfig
+xiaozhi/sdkconfig.old
+xiaozhi/.idf_tools/
+
+# Original archive and local captures
+xiaozhi-v2.3.0.zip
+*.log
+*.elf
+*.bin
+*.map
+
+# Editor and OS files
+.vscode/
+.idea/
+*.user
+*.suo
+Thumbs.db
+Desktop.ini
