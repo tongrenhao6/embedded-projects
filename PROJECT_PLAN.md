@@ -66,7 +66,7 @@
 
 ## 二、硬件与引脚确认
 
-### 2.1 硬件清单（已确认）
+### 2.1 硬件清单（资料与芯片探测已确认，外设待实测）
 | 部件 | 型号 | 接口 |
 |------|------|------|
 | MCU | ESP32-S3-WROOM-1-N16R8 | 16MB Flash + 8MB Octal PSRAM |
@@ -77,35 +77,42 @@
 | IMU | QMI8658A 6轴 | I2C |
 | IO扩展 | PCA9557PW | I2C |
 
-### 2.2 引脚分配（待首次烧录后实测确认）
-> ⚠️ 以下引脚来自原理图判读，首次上电后通过串口日志核对I2C设备地址和屏幕显示方向，如不对则微调。
+### 2.2 原理图网络（待实机验证，不得直接作为最终驱动配置）
+> 下列网络依据板卡原理图 `ESP32-S3-V1_0_1`（V1.0.1）整理，与实机 H0 测试属于不同证据。原理图 PDF 位于课程资料包 `02-原理图/SCH_ESP32-S3-V1_0_1_2026-01-30.pdf`；SHA-256：`AB52A53D7DA3CCDECA5F3CECDA598492DCE4FFFC0C7FFB0A27710AAEB5577CE0`。烧录前仍需确认原理图与手中板卡修订版一致。
 
 ```
-=== I2C 主总线 ===
-SDA  GPIO10    SCL  GPIO11
-挂载: ES8311(0x18)  ES7210(0x82)  PCA9557(0x19)  GT911触摸(0x5D)  QMI8658A(0x6B)
+=== I2C 主总线（原理图网络） ===
+SDA  GPIO1     SCL  GPIO2
+挂载: ES8311(7-bit 0x18)  ES7210(7-bit 0x41)  PCA9557(7-bit 0x19)  QMI8658A(7-bit 0x6A)
+触摸：连接器引出 CTP_SDA/CTP_SCL，主机映射与 GT911 地址待确认
 
 === LCD SPI3 ===
-SCLK GPIO41   MOSI GPIO40   MISO GPIO42
-CS   GPIO35   DC   GPIO37    RST  GPIO36
-背光  PCA9557 IO0（非直连GPIO）
+SCLK GPIO41   MOSI GPIO40   MISO 网络 LCD_MISO（MCU 接入脚待确认）
+CS   网络 LCD_CS（由 PCA9557 控制，位定义待实测）
+DC   GPIO39   RST 网络 RESET（需核对板级连接）
+背光 GPIO42（网络 IO42_LCD_BL）
 
 === 触摸 ===
-INT  GPIO9    RST  待确认
+INT  网络 CTP_INT（MCU 接入脚待确认）
+RST  网络 CTP_RST（MCU 接入脚待确认）
 
 === 音频 I2S ===
-MCLK GPIO15   BCLK GPIO14   WS(LRCK) GPIO13
-DOUT(喇叭) GPIO12   DIN(麦克风) 复用ES8311回环
+MCLK GPIO38   BCLK GPIO14   WS(LRCK) GPIO13
+DOUT(Codec) GPIO45  DIN(Codec) GPIO12
+外置麦克风经 ES7210 输入；功放使能网络为 PA_EN（控制映射待确认）
 
 === 摄像头 DVP ===
-XCLK  GPIO4    VSYNC GPIO5    HREF  GPIO6    PCLK GPIO7
-D0-GPIO16  D1-GPIO17  D2-GPIO18  D3-GPIO45
-D4-GPIO47  D5-GPIO48  D6-GPIO21  D7-GPIO46
-SIOD/SIOC  复用I2C(GPIO10/11)
+XCLK  GPIO5    VSYNC GPIO3    HREF  GPIO46    PCLK GPIO7
+D0-GPIO16  D1-GPIO18  D2-GPIO8   D3-GPIO17
+D4-GPIO15  D5-GPIO6   D6-GPIO4   D7-GPIO9
+SIOD/SIOC  网络 IO1_I2C_SDA / IO2_I2C_SCL
+PWDN 网络 DVP_PWDN（控制映射待确认）
 
 === 按键 ===
-BOOT  GPIO0    用户键 待确认
+BOOT  GPIO0    用户键 GPIO11
 ```
+
+注意：ES7210 硬件 7-bit 地址为 `0x41`。小智 `AUDIO_CODEC_ES7210_ADDR` 配置采用 8-bit 地址格式，代码会右移一位交给 ESP-IDF，因此该宏应填 `0x82`；若直接配置 ESP-IDF 的 7-bit `device_address`，才应填 `0x41`。PCA9557 原理图网络为 IO0=LCD_CS、IO1=PA_EN、IO2=DVP_PWDN、IO3..IO7=EXT-IO1..5；输出方向、有效电平和负载行为仍须实测。原理图不是设备响应或连通性的实测证明。
 
 ---
 
@@ -238,7 +245,7 @@ screen (lv_obj_t, 全屏)
 - [x] 下载小智 AI v2.3.0 源码到项目目录。
 - [x] 验证 ESP-IDF v5.5.4 环境可激活，且工程清单要求为 IDF `>=5.5.2`。
 - [x] 确认工程清单包含 ST7796、GT911、摄像头和 LVGL 所需组件。
-- [ ] 建立本地 Git 基线并保存首次提交；保留原始 zip，确认基线后再决定是否清理。
+- [x] 建立本地 Git 基线并保存首次提交（`a0a9b2c`）；原始 zip 保留在本机并由 `.gitignore` 排除，未纳入 Git。
 - [ ] 接入开发板，记录串口号、USB 供电行为、板卡修订版和首次启动日志。
 - [ ] 在第一次目标板构建时记录依赖解析结果、`sdkconfig`、固件大小和烧录版本号。
 
@@ -437,7 +444,8 @@ main/display/lcd_display.cc    # 默认不改；优先以 pet 模块和既有显
 
 ## 十一、下一步
 
-1. 建立本地 Git 基线，保留原始 zip，避免后续板级改动无法回溯。
-2. 接入开发板，确认串口号；开始 H0，先产出 I²C 扫描、屏幕色条、触摸坐标和音频测试日志。
-3. 将 H0 实测结果写入硬件基线后，再创建 `gec-gaga` board 并进行首个可烧录构建。
-4. 阶段 1 验收通过后，按状态机与事件队列架构进入咕嘎 UI 开发。
+1. 核对手中板卡丝印/修订版与 V1.0.1 原理图是否一致；不一致时先取得匹配版本原理图。
+2. 按 `docs/h0_bringup_plan.md` 实现并审查独立 H0 诊断镜像；默认只做启动信息与 I²C 地址探测，不初始化显示、音频、摄像头、触摸或 PCA9557 输出。
+3. 先完成主机侧构建和镜像检查；用户单独确认烧录后，才写入开发板。未知旧固件须先有可验证的备份/恢复路径。
+4. 按 H0 门槛逐项测试，将原始日志、实测结果和性能数据写入硬件基线与验证矩阵。
+5. H0 通过后再创建 `gec-gaga` board 并进行首个目标构建；阶段 1 验收通过后进入咕嘎 UI 开发。

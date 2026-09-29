@@ -7,6 +7,7 @@
 - `xiaozhi/`：小智 AI 固件源码。
 - `PROJECT_PLAN.md`：项目规划、阶段目标和验收标准。
 - `docs/hardware_baseline.md`：硬件实测基线与串口证据。
+- `docs/h0_bringup_plan.md`：H0 分阶段硬件冒烟测试与风险控制方案。
 - `docs/validation_matrix.md`：阶段验证矩阵和性能记录。
 
 ## 已确认环境
