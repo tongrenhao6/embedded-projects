@@ -19,3 +19,9 @@ xiaozhi-v2.3.0.zip
 *.suo
 Thumbs.db
 Desktop.ini
+
+# Git worktrees
+.worktrees/
+
+# Local scratch output
+tmp/
