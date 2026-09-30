@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>pH 水质监测平台</title>
+    <link rel="stylesheet" href="/style.css">
+  </head>
+  <body>
+    <header class="topbar">
+      <div>
+        <h1>pH 水质监测平台</h1>
+        <p>当前设备：<strong id="deviceId">ph_terminal_001</strong></p>
+      </div>
+      <div class="userbar">
+        <span id="currentUser">未登录</span>
+        <button id="logoutBtn" class="secondary" type="button">退出</button>
+      </div>
+      <div class="status status-stack">
+        <div class="status-line">
+          <span id="statusDot" class="dot"></span>
+          <span id="statusText">连接中</span>
+        </div>
+        <div class="status-line">
+          <span id="mqttDot" class="dot"></span>
+          <span id="mqttText">MQTT 检查中</span>
+        </div>
+        <div class="status-line">
+          <span id="uploadDot" class="dot"></span>
+          <span id="uploadStatusText">未上传检查中</span>
+        </div>
+        <span id="mqttBroker" class="auto-refresh">Broker --</span>
+        <span id="autoRefreshText" class="auto-refresh">自动刷新 5 秒</span>
+      </div>
+    </header>
+
+    <nav class="main-nav" aria-label="页面导航">
+      <button class="nav-tab active" type="button" data-page-target="dashboard">实时数据</button>
+      <button class="nav-tab" type="button" data-page-target="data">数据查询</button>
+      <button class="nav-tab" type="button" data-page-target="profile">个人资料</button>
+      <button class="nav-tab admin-only" type="button" data-page-target="commands">命令</button>
+      <button class="nav-tab admin-only" type="button" data-page-target="users">用户管理</button>
+    </nav>
+
+    <main class="page">
+      <section class="overview page-section is-active" data-page-section="dashboard" aria-label="数据概览">
+        <div class="metric">
+          <span>最近 pH</span>
+          <strong id="latestPh">--</strong>
+        </div>
+        <div class="metric">
+          <span>最近温度</span>
+          <strong id="latestTemp">--</strong>
+        </div>
+        <div class="metric">
+          <span>采样时间</span>
+          <strong id="latestTime">--</strong>
+        </div>
+        <div class="metric">
+          <span>来源</span>
+          <strong id="latestSource">--</strong>
+        </div>
+        <div class="metric alert-metric">
+          <span>未上传</span>
+          <strong id="pendingUploadCount">--</strong>
+        </div>
+        <div class="metric alert-metric">
+          <span>失败</span>
+          <strong id="failedUploadCount">--</strong>
+        </div>
+        <div class="metric wide-metric">
+          <span>最早未上传</span>
+          <strong id="oldestPendingTime">--</strong>
+        </div>
+        <div class="metric wide-metric">
+          <span>最近错误</span>
+          <strong id="lastUploadError">--</strong>
+        </div>
+      </section>
+
+      <section class="panel filters page-section" data-page-section="data" aria-label="查询条件">
+        <div class="field">
+          <label for="singleDate">按日期</label>
+          <input id="singleDate" type="date">
+        </div>
+        <div class="field">
+          <label for="startDate">开始日期</label>
+          <input id="startDate" type="date">
+        </div>
+        <div class="field">
+          <label for="endDate">结束日期</label>
+          <input id="endDate" type="date">
+        </div>
+        <div class="field">
+          <label for="sampleLimit">每页条数</label>
+          <select id="sampleLimit">
+            <option value="50" selected>50 条</option>
+            <option value="100">100 条</option>
+            <option value="200">200 条</option>
+          </select>
+        </div>
+        <div class="actions">
+          <button id="queryBtn" type="button">查询</button>
+          <button id="resetBtn" type="button" class="secondary">重置</button>
+          <button id="refreshBtn" type="button" class="secondary">刷新</button>
+        </div>
+      </section>
+
+      <section class="panel chart-panel page-section is-active" data-page-section="dashboard" aria-label="趋势图">
+        <div class="section-title">
+          <h2>趋势图</h2>
+          <div class="chart-actions">
+            <span id="chartHint">第 1 页 / 每页 50 条</span>
+            <button id="chartPrevPageBtn" class="secondary chart-page-btn" type="button">上一页</button>
+            <button id="chartNextPageBtn" class="secondary chart-page-btn" type="button">下一页</button>
+            <button id="fullscreenChartBtn" class="secondary chart-fullscreen-btn" type="button">全屏查看</button>
+          </div>
+        </div>
+        <div id="chartFrame" class="chart-frame">
+          <canvas id="trendChart" width="1000" height="360"></canvas>
+        </div>
+      </section>
+
+      <section class="panel command-panel page-section admin-only" data-page-section="commands" aria-label="远程命令">
+        <div>
+          <h2>远程命令</h2>
+          <p id="commandResult">待发送</p>
+        </div>
+        <div class="command-controls">
+          <div class="field compact-field">
+            <label for="commandMonth">补传月份</label>
+            <input id="commandMonth" type="month">
+          </div>
+          <button id="uploadPendingBtn" type="button">补传所选月份数据</button>
+        </div>
+      </section>
+
+      <section class="panel table-panel page-section admin-only" data-page-section="commands" aria-label="命令历史">
+        <div class="section-title">
+          <h2>命令历史</h2>
+          <span id="commandCount">0 条</span>
+        </div>
+        <div class="table-wrap command-history-wrap">
+          <table class="command-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>命令</th>
+                <th>状态</th>
+                <th>结果</th>
+                <th>创建时间</th>
+                <th>完成时间</th>
+              </tr>
+            </thead>
+            <tbody id="commandRows">
+              <tr>
+                <td colspan="6" class="empty">加载中</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel table-panel page-section" data-page-section="data" aria-label="最近数据">
+        <div class="section-title">
+          <h2>最近数据</h2>
+          <div class="pagination">
+            <span id="rowCount">0 条</span>
+            <button id="prevPageBtn" class="secondary" type="button">上一页</button>
+            <span id="pageInfo">第 1 / 1 页</span>
+            <button id="nextPageBtn" class="secondary" type="button">下一页</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>日期</th>
+                <th>时间</th>
+                <th>pH</th>
+                <th>温度</th>
+                <th>来源</th>
+                <th>写入时间</th>
+              </tr>
+            </thead>
+            <tbody id="sampleRows">
+              <tr>
+                <td colspan="6" class="empty">加载中</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel profile-panel page-section" data-page-section="profile" aria-label="个人资料">
+        <div>
+          <h2>个人资料</h2>
+          <p id="profileMessage">可修改自己的用户名、显示名称和密码</p>
+        </div>
+        <form id="profileForm" class="profile-form">
+          <div class="field">
+            <label for="profileUsername">用户名</label>
+            <input id="profileUsername" name="username" autocomplete="username">
+          </div>
+          <div class="field">
+            <label for="profileDisplayName">显示名称</label>
+            <input id="profileDisplayName" name="display_name" autocomplete="name">
+          </div>
+          <div class="field">
+            <label for="profileCurrentPassword">当前密码</label>
+            <input id="profileCurrentPassword" name="current_password" type="password" autocomplete="current-password">
+          </div>
+          <div class="field">
+            <label for="profilePassword">新密码</label>
+            <input id="profilePassword" name="password" type="password" autocomplete="new-password">
+          </div>
+          <button id="saveProfileBtn" type="submit">保存修改</button>
+        </form>
+      </section>
+
+      <section class="panel user-form-panel page-section admin-only" data-page-section="users" aria-label="新增用户">
+        <div>
+          <h2>新增用户</h2>
+          <p id="userFormMessage">创建普通用户或管理员账号</p>
+        </div>
+        <form id="userForm" class="user-form">
+          <div class="field">
+            <label for="newUsername">用户名</label>
+            <input id="newUsername" name="username" autocomplete="off" placeholder="3-32 位字母数字下划线">
+          </div>
+          <div class="field">
+            <label for="newDisplayName">显示名称</label>
+            <input id="newDisplayName" name="display_name" autocomplete="off">
+          </div>
+          <div class="field">
+            <label for="newPassword">初始密码</label>
+            <input id="newPassword" name="password" type="password" autocomplete="new-password">
+          </div>
+          <div class="field">
+            <label for="newRole">角色</label>
+            <select id="newRole" name="role">
+              <option value="user">普通用户</option>
+              <option value="admin">管理员</option>
+            </select>
+          </div>
+          <button id="createUserBtn" type="submit">创建用户</button>
+        </form>
+      </section>
+
+      <section class="panel table-panel page-section admin-only" data-page-section="users" aria-label="用户列表">
+        <div class="section-title">
+          <h2>用户列表</h2>
+          <span id="userCount">0 个</span>
+        </div>
+        <div class="table-wrap">
+          <table class="user-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>用户名</th>
+                <th>显示名称</th>
+                <th>角色</th>
+                <th>状态</th>
+                <th>最近登录</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody id="userRows">
+              <tr>
+                <td colspan="7" class="empty">加载中</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <div id="uploadAlert" class="modal-backdrop" hidden>
+      <section class="modal" role="dialog" aria-modal="true" aria-labelledby="uploadAlertTitle">
+        <h2 id="uploadAlertTitle">发现未上传数据</h2>
+        <p id="uploadAlertMessage">当前设备存在未上传数据。</p>
+        <div class="modal-actions">
+          <button id="alertUploadBtn" class="admin-only" type="button">立即补传</button>
+          <button id="alertLaterBtn" type="button" class="secondary">稍后提醒</button>
+        </div>
+      </section>
+    </div>
+
+    <script src="/app.js"></script>
+  </body>
+</html>

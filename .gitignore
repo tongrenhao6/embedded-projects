@@ -1,30 +1,71 @@
-# ESP-IDF generated output (gaga-desk-pet project)
-gaga-desk-pet/xiaozhi/build/
-gaga-desk-pet/xiaozhi/build-gec/
-gaga-desk-pet/xiaozhi/managed_components/
-gaga-desk-pet/xiaozhi/sdkconfig
-gaga-desk-pet/xiaozhi/sdkconfig.old
-gaga-desk-pet/xiaozhi/.idf_tools/
+# ============================================
+# Embedded Projects Repo .gitignore
+# ============================================
 
-# Original archive
-gaga-desk-pet/xiaozhi-v2.3.0.zip
-
-# Build artifacts
-*.log
-*.elf
+# ---- Keil MDK / ARMCC build artifacts ----
+Objects/
+Listings/
+*.o
+*.crf
+*.d
+*.axf
+*.hex
 *.bin
 *.map
+*.lnp
+*.htm
+*.lst
+*.bak
+*.dep
+*.plg
+*.scr
+*.scr.htm
+*.uvguix.*
+*.uvgui.*
+JLinkLog.txt
+JLinkSettings.ini
+DebugConfig/
+RTE/_*/
+RTE/.*
+*.dbgconf
 
-# Editor and OS files
+# ---- STM32CubeIDE / Eclipse ----
+.metadata/
+*.launch
+.settings/
+
+# ---- ESP-IDF build (for ESP32 projects) ----
+build/
+build-gec/
+managed_components/
+dependencies.lock
+sdkconfig
+sdkconfig.old
+.idf_tools/
+
+# ---- gaga-desk-pet specific ----
+gaga-desk-pet/xiaozhi-v2.3.0.zip
+gaga-desk-pet/tmp/
+
+# ---- Python (scripts / report generation) ----
+__pycache__/
+*.pyc
+*.pyo
+
+# ---- OS junk ----
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# ---- Documents / large binaries ----
+*.docx
+*.pdf
+
+# ---- Editor ----
 .vscode/
 .idea/
 *.user
 *.suo
-Thumbs.db
-Desktop.ini
 
-# Git worktrees
+# ---- Git worktrees ----
 .worktrees/
-
-# Local scratch output
-tmp/

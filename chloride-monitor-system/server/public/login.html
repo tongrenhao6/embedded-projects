@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>登录 - pH 水质监测平台</title>
+    <link rel="stylesheet" href="/style.css">
+  </head>
+  <body class="login-page">
+    <main class="login-shell">
+      <section class="login-panel" aria-label="登录">
+        <h1>pH 水质监测平台</h1>
+        <p>请使用普通用户或管理员账号登录</p>
+        <form id="loginForm" class="login-form">
+          <div class="field">
+            <label for="username">用户名</label>
+            <input id="username" name="username" autocomplete="username" required>
+          </div>
+          <div class="field">
+            <label for="password">密码</label>
+            <input id="password" name="password" type="password" autocomplete="current-password" required>
+          </div>
+          <button id="loginBtn" type="submit">登录</button>
+          <p id="loginMessage" class="login-message" aria-live="polite"></p>
+        </form>
+        <details class="forgot-panel">
+          <summary>忘记密码</summary>
+          <form id="forgotForm" class="login-form">
+            <div class="field">
+              <label for="forgotUsername">普通用户用户名</label>
+              <input id="forgotUsername" name="username" autocomplete="username">
+            </div>
+            <div class="field">
+              <label for="forgotPassword">新密码</label>
+              <input id="forgotPassword" name="password" type="password" autocomplete="new-password">
+            </div>
+            <button id="forgotBtn" class="secondary" type="submit">重置普通用户密码</button>
+            <p id="forgotMessage" class="login-message" aria-live="polite"></p>
+          </form>
+        </details>
+      </section>
+    </main>
+    <script src="/login.js"></script>
+  </body>
+</html>

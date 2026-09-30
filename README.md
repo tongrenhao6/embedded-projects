@@ -1,70 +1,29 @@
-# 咕嘎 AI 桌面宠物
+# embedded-projects
 
-基于小智 AI v2.3.0 的 ESP32-S3 桌宠项目，目标硬件为粤嵌 GEC-ESP32-S3 小智开发板。
+嵌入式软件工程项目集 —— 葛玉彬（北部湾大学 · 物联网工程 · 2027 届）
 
-## 项目结构
+## 项目列表
 
-- `xiaozhi/`：小智 AI 固件源码。
-- `PROJECT_PLAN.md`：项目规划、阶段目标和验收标准。
-- `docs/hardware_baseline.md`：硬件实测基线与串口证据。
-- `docs/h0_bringup_plan.md`：H0 分阶段硬件冒烟测试与风险控制方案。
-- `docs/validation_matrix.md`：阶段验证矩阵和性能记录。
+| 项目 | MCU / 平台 | 技术栈 | 简介 |
+|---|---|---|---|
+| [stm32-smart-home-panel](./stm32-smart-home-panel) | STM32F103C8T6 | CubeMX + HAL / Keil MDK / PWM / ADC / 编码器 / OLED | 智能家居控制面板：两路负载开关 + 光敏/编码器双模式调光 |
+| [canteen-ordering-system](./canteen-ordering-system) | 6818 Linux 开发板 | LVGL 8.2 / framebuffer / evdev / TCP / epoll / 阿里云 | 校园点餐：触摸屏点餐 + epoll 服务端 16 路并发 |
+| [chloride-monitor-system](./chloride-monitor-system) | ESP32-S3 | ESP-IDF / FreeRTOS / RS485 / SD 卡 / MQTT / Node.js / MySQL | 水质监测终端：采集→SD 缓存→MQTT 上云→Web 监控，断网补传 |
+| [beehive-monitor-system](./beehive-monitor-system) | ESP32-S3 ×2 | ESP-IDF / LoRa / MQTT / FreeRTOS / FastAPI / MySQL | 毕设：蜂箱温湿度监测，节点→LoRa 网关→MQTT→云监控全链路 |
+| [gaga-desk-pet](./gaga-desk-pet) | ESP32-S3 | ESP-IDF / 小智AI v2.3.0 / LVGL 9 / WebSocket / Opus / ST7796 | AI 桌宠"咕嘎"：语音对话 + 触摸互动 + 逐部件动画 + 情绪表情 |
 
-## 已确认环境
+## 技术栈速览
 
-- 目标芯片：ESP32-S3 revision v0.2。
-- Flash：16 MB。
-- PSRAM：8 MB。
-- ESP-IDF：v5.5.4。
-- 当前开发串口：`COM18`（CH340K）。
+- **MCU**：STM32F1（Cortex-M3）、ESP32-S3（Xtensa LX7）
+- **RTOS**：FreeRTOS
+- **通信**：UART / I2C / SPI / I2S / ADC / PWM / LoRa / MQTT / WebSocket / TCP Socket(epoll)
+- **GUI**：LVGL 8.x / 9.x（framebuffer + evdev / SPI LCD）
+- **AI/音频**：小智AI框架 / Opus 编解码 / ES8311+ES7210 / ESP-SR 唤醒词
+- **工具链**：STM32CubeMX、Keil MDK、ESP-IDF v5.5、VS Code、GCC、Git
+- **调试**：J-Link / ST-Link、串口日志、示波器、逻辑分析仪
 
-## 开发约束
+## 关于作者
 
-1. 先完成 H0 硬件冒烟测试，再固化 GPIO、I²C 地址和显示参数。
-2. 不把 `xiaozhi/build/` 或 `xiaozhi/managed_components/` 等生成内容提交到 Git。
-3. `xiaozhi/dependencies.lock` 用于记录组件解析结果，应纳入版本控制。
-4. LVGL 对象只能由 UI 任务或受保护的 LVGL 上下文修改。
-5. 每次板级代码修改后，使用 ESP-IDF 环境执行构建，并将结果记录到验证矩阵。
-
-## 构建前置
-
-在 PowerShell 中激活 ESP-IDF：
-
-```powershell
-& "$env:IDF_PATH\export.ps1"
-```
-
-进入固件目录并确认目标：
-
-```powershell
-Set-Location .\xiaozhi
-idf.py set-target esp32s3
-idf.py build
-```
-
-烧录和串口监控前，先确认开发板串口号和硬件基线已更新：
-
-```powershell
-idf.py -p COM18 flash monitor
-```
-
-## Git 工作流
-
-提交采用 Conventional Commits 格式，例如：
-
-```text
-docs(规划): 完善硬件验证与运行时架构
-feat(板级): 添加 GEC-GAGA ESP32-S3 适配
-fix(显示): 修正 ST7796 色彩顺序
-```
-
-提交前至少执行：
-
-```powershell
-git status
-git diff --check
-```
-
-## 当前状态
-
-仓库已完成初始化，源码和规划文档已加入暂存区。H0 尚未完成；当前串口上的固件仍是未知旧固件，不能作为目标板适配结果。
+2027 届物联网工程本科，求职方向为嵌入式软件工程师。
+- 邮箱：1542756039@qq.com
+- 电话：187-7732-5107

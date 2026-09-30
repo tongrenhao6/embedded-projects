@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>蜂箱环境监测系统</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐝</text></svg>">
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- 顶部导航栏 -->
+    <header class="app-header">
+      <div class="header-brand">
+        <div class="logo-icon">🐝</div>
+        <div class="brand-text">
+          <h1>蜂箱环境监测系统</h1>
+          <p class="subtitle">LoRa / Wi-Fi 物联网蜂箱多节点实时监测与姿态告警平台</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <div class="system-status" id="systemStatus">
+          <span class="status-dot online"></span>
+          <span class="status-text">系统正常</span>
+        </div>
+        <div class="auto-refresh-control">
+          <label class="toggle-switch" title="开启/关闭 2秒自动刷新">
+            <input type="checkbox" id="autoRefreshToggle" checked>
+            <span class="slider"></span>
+          </label>
+          <span class="refresh-label" id="refreshTimerLabel">2s 自动刷新</span>
+        </div>
+        <button id="refreshBtn" class="btn btn-primary" title="点击立即刷新数据">
+          <span class="btn-icon">🔄</span>
+          <span>立即刷新</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- 全局告警通知栏 -->
+    <div id="alarmBanner" class="alarm-banner hidden">
+      <div class="alarm-icon">⚠️</div>
+      <div class="alarm-content">
+        <div class="alarm-title" id="alarmTitle">倾倒告警触发！</div>
+        <div class="alarm-desc" id="alarmDesc">检测到当前蜂箱处于倾倒状态，可能受到外力撞击或大风侵袭，请立即前往蜂场处理！</div>
+      </div>
+      <div class="alarm-badge" id="alarmBadge">status_flags = 15</div>
+    </div>
+
+    <!-- 全局错误提示栏 -->
+    <div id="errorBanner" class="error-banner hidden">
+      <span class="error-icon">❌</span>
+      <span class="error-message" id="errorMessage">无法连接到后端服务器，请检查网络或后端服务状态。</span>
+      <button class="btn btn-sm btn-outline" id="dismissErrorBtn">关闭</button>
+    </div>
+
+    <!-- 设备与节点选择栏 -->
+    <section class="device-toolbar">
+      <div class="toolbar-group">
+        <label for="gatewaySelect" class="toolbar-label">
+          <span class="label-icon">📡</span>
+          <span>选择网关：</span>
+        </label>
+        <div class="select-wrapper">
+          <select id="gatewaySelect" class="form-select">
+            <option value="">正在加载网关列表...</option>
+          </select>
+        </div>
+        <span id="gatewayStatusBadge" class="badge badge-neutral">状态检测中</span>
+      </div>
+
+      <div class="toolbar-group">
+        <label for="nodeSelect" class="toolbar-label">
+          <span class="label-icon">📦</span>
+          <span>选择蜂箱节点：</span>
+        </label>
+        <div class="select-wrapper">
+          <select id="nodeSelect" class="form-select" disabled>
+            <option value="">请先选择网关</option>
+          </select>
+        </div>
+        <span id="nodeCountBadge" class="badge badge-info">节点: --</span>
+        <span id="nodeStatusBadge" class="badge badge-neutral">节点状态检测中</span>
+      </div>
+
+      <div class="toolbar-group toolbar-meta">
+        <div class="meta-item">
+          <span class="meta-label">最后更新：</span>
+          <span class="meta-value" id="lastUpdateTime">--:--:--</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 主展示区域 -->
+    <main class="dashboard-main">
+      <!-- 实时监测核心指标卡片 -->
+      <section class="metrics-grid">
+        <!-- 箱内温度 -->
+        <div class="metric-card inside-temp">
+          <div class="metric-header">
+            <span class="metric-icon">🌡️</span>
+            <span class="metric-title">箱内温度</span>
+            <span class="metric-tag tag-inside">核心温区</span>
+          </div>
+          <div class="metric-body">
+            <div class="metric-value-wrapper">
+              <span class="metric-value" id="valInsideTemp">--</span>
+              <span class="metric-unit">°C</span>
+            </div>
+            <div class="metric-sub" id="subInsideTemp">蜂群育虫活动适宜温区</div>
+          </div>
+        </div>
+
+        <!-- 箱内湿度 -->
+        <div class="metric-card inside-hum">
+          <div class="metric-header">
+            <span class="metric-icon">💧</span>
+            <span class="metric-title">箱内湿度</span>
+            <span class="metric-tag tag-inside">内部湿度</span>
+          </div>
+          <div class="metric-body">
+            <div class="metric-value-wrapper">
+              <span class="metric-value" id="valInsideHum">--</span>
+              <span class="metric-unit">%RH</span>
+            </div>
+            <div class="metric-sub" id="subInsideHum">育雏适宜相对湿度 (50~70%)</div>
+          </div>
+        </div>
+
+        <!-- 箱外温度 -->
+        <div class="metric-card outside-temp">
+          <div class="metric-header">
+            <span class="metric-icon">🌤️</span>
+            <span class="metric-title">箱外温度</span>
+            <span class="metric-tag tag-outside">环境参考</span>
+          </div>
+          <div class="metric-body">
+            <div class="metric-value-wrapper">
+              <span class="metric-value" id="valOutsideTemp">--</span>
+              <span class="metric-unit">°C</span>
+            </div>
+            <div class="metric-sub" id="subOutsideTemp">蜂场外界环境温度</div>
+          </div>
+        </div>
+
+        <!-- 箱外湿度 -->
+        <div class="metric-card outside-hum">
+          <div class="metric-header">
+            <span class="metric-icon">🌦️</span>
+            <span class="metric-title">箱外湿度</span>
+            <span class="metric-tag tag-outside">环境参考</span>
+          </div>
+          <div class="metric-body">
+            <div class="metric-value-wrapper">
+              <span class="metric-value" id="valOutsideHum">--</span>
+              <span class="metric-unit">%RH</span>
+            </div>
+            <div class="metric-sub" id="subOutsideHum">蜂场外界相对湿度</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 蜂箱状态与设备详细指标 -->
+      <section class="details-grid">
+        <!-- 倾倒状态卡片 -->
+        <div class="detail-card status-card">
+          <div class="card-header">
+            <h3><span class="header-icon">⚖️</span> 蜂箱姿态 / 倾倒状态</h3>
+          </div>
+          <div class="card-body status-body">
+            <div class="tilt-status-indicator" id="tiltIndicator">
+              <div class="tilt-icon" id="tiltIcon">🛡️</div>
+              <div class="tilt-info">
+                <div class="tilt-main-text" id="tiltText">正常 (未倾倒)</div>
+                <div class="tilt-desc" id="tiltDesc">蜂箱放置稳固，姿态传感器读数正常</div>
+              </div>
+            </div>
+            <div class="status-flags-breakdown">
+              <div class="flag-row">
+                <span class="flag-name">状态标志位 (status_flags)：</span>
+                <span class="flag-value font-mono" id="valStatusFlags">--</span>
+              </div>
+              <div class="flag-tags" id="statusFlagTags">
+                <span class="flag-pill">等待数据...</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 温湿对比与运行状态卡片 -->
+        <div class="detail-card telemetry-meta-card">
+          <div class="card-header">
+            <h3><span class="header-icon">📊</span> 温湿差与传输诊断</h3>
+          </div>
+          <div class="card-body">
+            <div class="meta-grid">
+              <div class="meta-box">
+                <div class="box-label">内外温差 (箱内 - 箱外)</div>
+                <div class="box-value" id="valTempDiff">--</div>
+              </div>
+              <div class="meta-box">
+                <div class="box-label">内外湿差 (箱内 - 箱外)</div>
+                <div class="box-value" id="valHumDiff">--</div>
+              </div>
+              <div class="meta-box">
+                <div class="box-label">数据包序列号 (Sequence)</div>
+                <div class="box-value font-mono" id="valSequenceNo">--</div>
+              </div>
+              <div class="meta-box">
+                <div class="box-label">节点运行时间 (Uptime)</div>
+                <div class="box-value font-mono" id="valUptime">--</div>
+              </div>
+              <div class="meta-box">
+                <div class="box-label">网关状态 / 最后在线</div>
+                <div class="box-value" id="valGatewayStatus">--</div>
+              </div>
+              <div class="meta-box">
+                <div class="box-label">节点状态 / 最后上报</div>
+                <div class="box-value" id="valNodeStatus">--</div>
+              </div>
+              <div class="meta-box">
+                <div class="box-label">数据接收时间 (Received At)</div>
+                <div class="box-value font-mono" id="valReceivedAt">--</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 历史趋势图表区域 -->
+      <section class="charts-section">
+        <div class="section-header">
+          <div class="section-title-group">
+            <h2><span class="header-icon">📈</span> 环境温湿度历史趋势</h2>
+            <span class="section-subtitle">基于 LoRa/MQTT 的分钟聚合历史数据</span>
+          </div>
+          <div class="chart-controls">
+            <div class="limit-selector">
+              <span class="limit-label">历史范围：</span>
+              <button class="btn-chip active" data-limit="20">20 条</button>
+              <button class="btn-chip" data-limit="50">50 条</button>
+              <button class="btn-chip" data-limit="100">100 条</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="charts-grid">
+          <!-- 温度图表 -->
+          <div class="chart-card">
+            <div class="chart-card-header">
+              <div class="chart-title">
+                <span class="dot-indicator dot-orange"></span>
+                <span>温度趋势曲线 (°C)</span>
+              </div>
+              <div class="chart-legend">
+                <span class="legend-item"><span class="legend-color legend-inside-temp"></span>箱内温度</span>
+                <span class="legend-item"><span class="legend-color legend-outside-temp"></span>箱外温度</span>
+              </div>
+            </div>
+            <div class="canvas-container">
+              <canvas id="tempChart"></canvas>
+              <div id="tempChartEmpty" class="chart-empty hidden">暂无温度历史数据</div>
+            </div>
+          </div>
+
+          <!-- 湿度图表 -->
+          <div class="chart-card">
+            <div class="chart-card-header">
+              <div class="chart-title">
+                <span class="dot-indicator dot-blue"></span>
+                <span>湿度趋势曲线 (%RH)</span>
+              </div>
+              <div class="chart-legend">
+                <span class="legend-item"><span class="legend-color legend-inside-hum"></span>箱内湿度</span>
+                <span class="legend-item"><span class="legend-color legend-outside-hum"></span>箱外湿度</span>
+              </div>
+            </div>
+            <div class="canvas-container">
+              <canvas id="humChart"></canvas>
+              <div id="humChartEmpty" class="chart-empty hidden">暂无湿度历史数据</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 历史数据明细表格 -->
+      <section class="table-section">
+        <div class="section-header">
+          <div class="section-title-group">
+            <h2><span class="header-icon">📋</span> 最近上报数据明细</h2>
+            <span class="section-subtitle" id="tableSubtitle">展示最新上报记录</span>
+          </div>
+          <div class="table-actions">
+            <span class="records-count" id="recordsCount">共 0 条记录</span>
+            <a id="exportCsvLink" class="btn btn-sm btn-outline" href="#" title="导出当前节点最近 7 天的分钟聚合 CSV（含空缺值与有效率，可用于训练数据）">
+              <span class="btn-icon">⬇️</span>
+              <span>导出 CSV</span>
+            </a>
+            <a id="qualityLink" class="btn btn-sm btn-outline" href="#" target="_blank" title="查看最近 24 小时数据质量统计（JSON）">
+              <span class="btn-icon">🧪</span>
+              <span>质量统计</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="table-wrapper">
+          <table class="data-table" id="historyTable">
+            <thead>
+              <tr>
+                <th>序号 (Seq)</th>
+                <th>接收时间 (Received At)</th>
+                <th>箱内温度</th>
+                <th>箱内湿度</th>
+                <th>箱外温度</th>
+                <th>箱外湿度</th>
+                <th>姿态/倾倒</th>
+                <th>状态标志</th>
+                <th>节点运行时间</th>
+              </tr>
+            </thead>
+            <tbody id="historyTableBody">
+              <tr>
+                <td colspan="9" class="table-placeholder">正在加载数据...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="app-footer">
+      <div class="footer-content">
+        <div class="footer-info">
+          <p>蜂箱环境智能监测系统 · FastAPI + MySQL + MQTT + LoRa ESP32 网关</p>
+        </div>
+        <div class="footer-links">
+          <a href="/docs" target="_blank" class="footer-link">📖 API 文档 (Swagger)</a>
+          <a href="/api/health" target="_blank" class="footer-link">❤️ 健康检查</a>
+          <a href="/api/gateways" target="_blank" class="footer-link">📡 网关列表接口</a>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- JavaScript 脚本 -->
+  <script src="/static/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+开发板触摸屏
+    ↓  		点击 +、-、购物车、结算
+LVGL 界面 ui_order.c
+    ↓ 		调用 TCP 函数
+网络客户端 order_client.c
+    ↓ 		TCP 命令，例如 ADD|10\n   
+阿里云服务器 server_main.c
+    ↓ 		把命令交给业务层
+order_service.c
+    ↓
+menu.c 读取菜单     cart.c 链表购物车
+    ↓                      	↓
+menu.txt      -->       计算总价 / 删除 / 提交
+                         	↓
+                     	   orders.txt
