@@ -1,0 +1,14 @@
+MDK-ARM/32project/
+MDK-ARM/*.uvoptx
+MDK-ARM/*.uvguix.*
+MDK-ARM/*.build_log.htm
+MDK-ARM/*.lst
+*.o
+*.obj
+*.axf
+*.hex
+*.map
+*.d
+*.crf
+*.dep
+*.lnp
