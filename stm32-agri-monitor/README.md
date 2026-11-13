@@ -17,6 +17,7 @@
 | `Middleware/` | 通信协议、参数和环形缓冲区 |
 | `Service/` | 传感器、LoRa、Wi-Fi、显示、告警与存储服务 |
 | `MDK-ARM/` | Keil MDK 工程与启动文件 |
+| `hardware/` | 网关板/终端板原理图、PCB 布局截图与 BOM（立创 EDA） |
 
 ## 构建与配置
 
